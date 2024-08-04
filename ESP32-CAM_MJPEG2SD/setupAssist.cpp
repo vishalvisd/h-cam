@@ -47,56 +47,62 @@ static bool wgetFile(const char* githubURL, const char* filePath, bool restart =
     File f = fp.open(filePath, FILE_READ);
     size_t fSize = f.size();
     f.close();
-    if (!fSize) fp.remove(filePath);
+    if (!fSize) {
+        LOG_INF("Why? found empty file %s", filePath);
+        fp.remove(filePath);
+    };
   }
-  if (!fp.exists(filePath)) {
-    if (WiFi.status() != WL_CONNECTED) return false;  
-    char downloadURL[150];
-    snprintf(downloadURL, 150, "%s%s", githubURL, filePath);
-    for (int i = 0; i < 2; i++) { 
-      // try secure then insecure
-      File f = fp.open(filePath, FILE_WRITE);
-      if (f) {
-        HTTPClient https;
-        WiFiClientSecure wclient;
-        if (!i) wclient.setCACert(git_rootCACertificate);
-        else wclient.setInsecure(); // not SSL      
-        if (!https.begin(wclient, downloadURL)) {
-          char errBuf[100];
-          wclient.lastError(errBuf, 100);
-          checkMemory();
-          LOG_ERR("Could not connect to github server, err: %s", errBuf);
-        } else {
-          LOG_INF("Downloading %s from %s", filePath, downloadURL);    
-          int httpCode = https.GET();
-          int fileSize = 0;
-          if (httpCode == HTTP_CODE_OK) {
-            fileSize = https.writeToStream(&f);
-            if (fileSize <= 0) {
-              httpCode = 0;
-              LOG_ERR("Download failed: writeToStream");
-            } else LOG_INF("Downloaded %s, size %d bytes", filePath, fileSize);       
-          } else LOG_ERR("Download failed, error: %s", https.errorToString(httpCode).c_str());    
-          https.end();
-          f.close();
-          if (httpCode == HTTP_CODE_OK) break;
-          else fp.remove(filePath);
-        }
-      } else {
-        LOG_ERR("Open failed: %s", filePath);
-        return false;
-      }
-    } 
-    if (restart) {
-      if (loadConfig()) doRestart("config file downloaded");
-    }
-  } 
+//   if (!fp.exists(filePath)) {
+//     if (WiFi.status() != WL_CONNECTED) return false;
+//     char downloadURL[150];
+//     snprintf(downloadURL, 150, "%s%s", githubURL, filePath);
+//     for (int i = 0; i < 2; i++) {
+//       // try secure then insecure
+//       File f = fp.open(filePath, FILE_WRITE);
+//       if (f) {
+//         HTTPClient https;
+//         WiFiClientSecure wclient;
+//         if (!i) wclient.setCACert(git_rootCACertificate);
+//         else wclient.setInsecure(); // not SSL
+//         if (!https.begin(wclient, downloadURL)) {
+//           char errBuf[100];
+//           wclient.lastError(errBuf, 100);
+//           checkMemory();
+//           LOG_ERR("Could not connect to github server, err: %s", errBuf);
+//         } else {
+//           LOG_INF("Downloading %s from %s", filePath, downloadURL);
+//           int httpCode = https.GET();
+//           int fileSize = 0;
+//           if (httpCode == HTTP_CODE_OK) {
+//             fileSize = https.writeToStream(&f);
+//             if (fileSize <= 0) {
+//               httpCode = 0;
+//               LOG_ERR("Download failed: writeToStream");
+//             } else LOG_INF("Downloaded %s, size %d bytes", filePath, fileSize);
+//           } else LOG_ERR("Download failed, error: %s", https.errorToString(httpCode).c_str());
+//           https.end();
+//           f.close();
+//           if (httpCode == HTTP_CODE_OK) break;
+//           else fp.remove(filePath);
+//         }
+//       } else {
+//         LOG_ERR("Open failed: %s", filePath);
+//         return false;
+//       }
+//     }
+//     if (restart) {
+//       if (loadConfig()) doRestart("config file downloaded");
+//     }
+//   }
   return true;
 }
 
 bool checkDataFiles() {
   // Download any missing data files
-  if (!fp.exists(DATA_DIR)) fp.mkdir(DATA_DIR);
+  if (!fp.exists(DATA_DIR)){
+    LOG_INF("Creating data director why?");
+    fp.mkdir(DATA_DIR);
+  }
   bool res = wgetFile(GITHUB_URL, CONFIG_FILE_PATH, true);
   if (res) res = wgetFile(GITHUB_URL, INDEX_PAGE_PATH);      
   if (res) res = appDataFiles();

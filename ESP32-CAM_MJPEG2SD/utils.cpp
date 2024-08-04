@@ -21,8 +21,8 @@ char startupFailure[50] = {0};
 /************************** Wifi **************************/
 
 char hostName[32] = ""; // Default Host name
-char ST_SSID[32]  = ""; //Default router ssid
-char ST_Pass[MAX_PWD_LEN] = ""; //Default router passd
+char ST_SSID[32]  = "visd_3f_2.4ghz"; //Default router ssid
+char ST_Pass[MAX_PWD_LEN] = "visdnick"; //Default router passd
 
 // leave following blank for dhcp
 char ST_ip[16]  = ""; // Static IP
@@ -194,6 +194,7 @@ bool startWifi(bool firstcall) {
 
 static void pingSuccess(esp_ping_handle_t hdl, void *args) {
   if (!timeSynchronized) getLocalNTP();
+  
   if (!dataFilesChecked) dataFilesChecked = checkDataFiles();
   doAppPing();
 }

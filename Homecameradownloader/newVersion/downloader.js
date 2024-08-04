@@ -18,9 +18,9 @@ const CAMIPs = {
     }
 }
 
-const dayDate = '20240222';
-const startTime = '120000';
-const endTime = '121000';
+const dayDate = '20240724';
+const startTime = '081300';
+const endTime = '083000';
 
 // Set
 const selectedCam = CAMIPs.CAM1;
@@ -93,6 +93,7 @@ axios.get(`http://${selectedCamIP}/control?forceRecord=0`).then(function () {
                     // `http://${selectedCam}/control?download=1`
                     return new Promise(resolve => {
                         process.stdout.write(`Downloading... `);
+                        console.log(`wget -O ${COMBINED_FILE_NAME}/tempVid${index}.avi http://${selectedCamIP}/control?download=1`);
                         exec(`wget -O ${COMBINED_FILE_NAME}/tempVid${index}.avi http://${selectedCamIP}/control?download=1`,
                             function (error, stdout, stderr) {
                                 if (error !== null) {
@@ -133,7 +134,7 @@ axios.get(`http://${selectedCamIP}/control?forceRecord=0`).then(function () {
                     if (err44) {
                         console.log(err44);
                     }
-                    fs.rmSync(COMBINED_FILE_NAME, {recursive: true, force: true});
+                    // fs.rmSync(COMBINED_FILE_NAME, {recursive: true, force: true});
                 });
                 console.log("done")
             })
